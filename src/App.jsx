@@ -22,7 +22,7 @@ const C = {
 };
 
 const UNITS = ["ชิ้น", "กล่อง", "แพ็ค", "ถุง", "ขวด", "ม้วน", "คู่", "ชุด", "กก.", "ลิตร"];
-const CATEGORIES = ["วัตถุดิบ", "บรรจุภัณฑ์", "อุปกรณ์สำนักงาน", "สินค้าสำเร็จรูป", "อะไหล่", "อื่นๆ"];
+const CATEGORIES = ["ซิป", "Spout", "อะไหล่", "อื่นๆ"];
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmtNum = (n) => Number(n || 0).toLocaleString("th-TH");
