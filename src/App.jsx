@@ -304,10 +304,10 @@ function ProductFormModal({ initial, onClose, onSave, existingImage }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "center",padding: 20 justifyContent: "center" }}>
       <form onSubmit={submit} style={{
-        background: C.surface, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto",
-        borderRadius: "18px 18px 0 0", padding: "18px 20px 24px",
+        background: C.surface, width: "100%", maxWidth: 480, maxHeight: "85vh", overflowY: "auto",
+        borderRadius: "18px", padding: "18px 20px 24px",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ fontSize: 17, fontWeight: 700, color: C.ink, margin: 0 }}>{isEdit ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}</h2>
