@@ -304,7 +304,7 @@ function ProductFormModal({ initial, onClose, onSave, existingImage }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "center",padding: 20 justifyContent: "center" }}>
+   <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <form onSubmit={submit} style={{
         background: C.surface, width: "100%", maxWidth: 480, maxHeight: "85vh", overflowY: "auto",
         borderRadius: "18px", padding: "18px 20px 24px",
