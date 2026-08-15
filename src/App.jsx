@@ -22,7 +22,7 @@ const C = {
 };
 
 const UNITS = ["ชิ้น", "กล่อง", "แพ็ค", "ถุง", "ขวด", "ม้วน", "คู่", "ชุด", "กก.", "ลิตร"];
-const CATEGORIES = ["ซิป", "Spout", "อะไหล่", "อื่นๆ"];
+const CATEGORIES = ["ซิป", "สเป๊าส์", "อะไหล่", "อื่นๆ"];
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmtNum = (n) => Number(n || 0).toLocaleString("th-TH");
@@ -34,8 +34,8 @@ const fmtDate = (iso) => {
 
 /* ------------------------------ configuration ------------------------------ */
 /* แก้ 2 ค่านี้ก่อนใช้งานจริง — ดูวิธีได้ในคู่มือที่แนบมา */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS0Ym5vgEFpgA1AnIflXO9cSHQAgjvIMjtEvmtEfAzCoS__kTQ1-r6yzGUCpms0Gyh/exec"; // เช่น https://script.google.com/macros/s/XXXX/exec
-const GOOGLE_CLIENT_ID = "195320438802-fdg9tbfu976m1vqt21qui7l812rgph8d.apps.googleusercontent.com"; // เช่น 123456-abc.apps.googleusercontent.com
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS0Ym5vgEFpgA1AnIflXO9cSHQAgjvIMjtEvmtEfAzCoS__kTQ1-r6yzGUCpms0Gyh/exec";
+const GOOGLE_CLIENT_ID = "195320438802-fdg9tbfu976m1vqt21qui7l812rgph8d.apps.googleusercontent.com";
 
 const isConfigured = APPS_SCRIPT_URL.startsWith("http");
 const isGoogleConfigured = GOOGLE_CLIENT_ID.includes(".apps.googleusercontent.com");
@@ -304,7 +304,7 @@ function ProductFormModal({ initial, onClose, onSave, existingImage }) {
   };
 
   return (
-   <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,22,17,0.55)", zIndex: 250, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <form onSubmit={submit} style={{
         background: C.surface, width: "100%", maxWidth: 480, maxHeight: "85vh", overflowY: "auto",
         borderRadius: "18px", padding: "18px 20px 24px",
@@ -521,14 +521,20 @@ function ProductsPage({ products, images, onZoom, onAdd, onEdit, onDelete }) {
   );
 }
 
-function MoveForm({ mode, products, images, onZoom, onSubmit }) {
+function MoveForm({ mode, products, images, onZoom, onSubmit, userEmail }) {
   const isOut = mode === "out";
+  const [category, setCategory] = useState("ทั้งหมด");
   const [productId, setProductId] = useState("");
   const [qty, setQty] = useState("");
-  const [who, setWho] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
-  const product = products.find((p) => p.id === productId);
+  const filteredProducts = category === "ทั้งหมด" ? products : products.filter((p) => p.category === category);
+  const product = filteredProducts.find((p) => p.id === productId);
+
+  const changeCategory = (e) => {
+    setCategory(e.target.value);
+    setProductId(""); // เปลี่ยนหมวดหมู่แล้วต้องเลือกสินค้าใหม่ เผื่อของเดิมไม่อยู่ในหมวดที่เลือก
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -537,17 +543,23 @@ function MoveForm({ mode, products, images, onZoom, onSubmit }) {
     const n = Number(qty);
     if (!n || n <= 0) { setError("กรุณากรอกจำนวนให้ถูกต้อง"); return; }
     if (isOut && product && n > product.qty) { setError(`สต๊อกคงเหลือมีเพียง ${fmtNum(product.qty)} ${product.unit}`); return; }
-    if (!who.trim()) { setError(isOut ? "กรุณากรอกชื่อผู้เบิก" : "กรุณากรอกแหล่งที่มา/ผู้ส่งสินค้า"); return; }
-    onSubmit({ productId, qty: n, who: who.trim(), note: note.trim() });
-    setProductId(""); setQty(""); setWho(""); setNote("");
+    onSubmit({ productId, qty: n, who: userEmail, note: note.trim() });
+    setProductId(""); setQty(""); setNote("");
   };
 
   return (
     <form onSubmit={submit} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 20 }}>
+      <Field label="หมวดหมู่ *">
+        <select value={category} onChange={changeCategory} style={inputStyle}>
+          <option value="ทั้งหมด">-- ทุกหมวดหมู่ --</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </Field>
+
       <Field label="เลือกสินค้า *">
         <select value={productId} onChange={(e) => setProductId(e.target.value)} style={inputStyle}>
           <option value="">-- เลือกสินค้า --</option>
-          {products.map((p) => <option key={p.id} value={p.id}>{p.name} (คงเหลือ {fmtNum(p.qty)} {p.unit})</option>)}
+          {filteredProducts.map((p) => <option key={p.id} value={p.id}>{p.name} (คงเหลือ {fmtNum(p.qty)} {p.unit})</option>)}
         </select>
       </Field>
 
@@ -566,8 +578,8 @@ function MoveForm({ mode, products, images, onZoom, onSubmit }) {
       <Field label={`จำนวนที่${isOut ? "เบิก" : "รับเข้า"} *`}>
         <input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} placeholder="0" style={inputStyle} />
       </Field>
-      <Field label={isOut ? "ผู้เบิก / แผนก *" : "แหล่งที่มา / ผู้ส่งสินค้า *"}>
-        <input value={who} onChange={(e) => setWho(e.target.value)} placeholder={isOut ? "เช่น ฝ่ายผลิต - คุณสมหญิง" : "เช่น บริษัท เอบีซี จำกัด"} style={inputStyle} />
+      <Field label={isOut ? "ผู้เบิก / แผนก (ล็อกตามบัญชีที่ล็อกอิน)" : "แหล่งที่มา / ผู้ส่งสินค้า (ล็อกตามบัญชีที่ล็อกอิน)"}>
+        <input value={userEmail} disabled readOnly style={{ ...inputStyle, background: C.bg, color: C.inkSoft, cursor: "not-allowed" }} />
       </Field>
       <Field label="หมายเหตุ">
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} style={{ ...inputStyle, resize: "none", fontFamily: "inherit" }} />
@@ -586,11 +598,11 @@ function MoveForm({ mode, products, images, onZoom, onSubmit }) {
   );
 }
 
-function MovePage({ mode, products, images, transactions, onZoom, onSubmit }) {
+function MovePage({ mode, products, images, transactions, onZoom, onSubmit, userEmail }) {
   const rows = transactions.filter((t) => t.type === mode).slice(0, 10);
   return (
     <div>
-      <MoveForm mode={mode} products={products} images={images} onZoom={onZoom} onSubmit={onSubmit} />
+      <MoveForm mode={mode} products={products} images={images} onZoom={onZoom} onSubmit={onSubmit} userEmail={userEmail} />
       <SectionHeader title={mode === "out" ? "ประวัติการเบิกล่าสุด" : "ประวัติการรับเข้าล่าสุด"} />
       {rows.length === 0 ? <EmptyState icon={ClipboardList} title="ยังไม่มีประวัติ" /> : <TxTable rows={rows} />}
     </div>
@@ -829,9 +841,9 @@ export default function StockApp() {
                 onAdd={() => setFormModal("new")} onEdit={(p) => setFormModal(p)}
                 onDelete={(p) => setConfirm(p)} />
             ) : page === "out" ? (
-              <MovePage mode="out" products={products} images={images} transactions={transactions} onZoom={setZoom} onSubmit={doMove("out")} />
+              <MovePage mode="out" products={products} images={images} transactions={transactions} onZoom={setZoom} onSubmit={doMove("out")} userEmail={user.email} />
             ) : page === "in" ? (
-              <MovePage mode="in" products={products} images={images} transactions={transactions} onZoom={setZoom} onSubmit={doMove("in")} />
+              <MovePage mode="in" products={products} images={images} transactions={transactions} onZoom={setZoom} onSubmit={doMove("in")} userEmail={user.email} />
             ) : (
               <ReportPage products={products} />
             )}
