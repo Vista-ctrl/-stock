@@ -34,8 +34,8 @@ const fmtDate = (iso) => {
 
 /* ------------------------------ configuration ------------------------------ */
 /* แก้ 2 ค่านี้ก่อนใช้งานจริง — ดูวิธีได้ในคู่มือที่แนบมา */
-const APPS_SCRIPT_URL = "วาง Web app URL จาก Google Apps Script ตรงนี้"; // เช่น https://script.google.com/macros/s/XXXX/exec
-const GOOGLE_CLIENT_ID = "วาง OAuth Client ID จาก Google Cloud Console ตรงนี้"; // เช่น 123456-abc.apps.googleusercontent.com
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS0Ym5vgEFpgA1AnIflXO9cSHQAgjvIMjtEvmtEfAzCoS__kTQ1-r6yzGUCpms0Gyh/exec"; // เช่น https://script.google.com/macros/s/XXXX/exec
+const GOOGLE_CLIENT_ID = "195320438802-fdg9tbfu976m1vqt21qui7l812rgph8d.apps.googleusercontent.com"; // เช่น 123456-abc.apps.googleusercontent.com
 
 const isConfigured = APPS_SCRIPT_URL.startsWith("http");
 const isGoogleConfigured = GOOGLE_CLIENT_ID.includes(".apps.googleusercontent.com");
