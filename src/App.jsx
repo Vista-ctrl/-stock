@@ -416,18 +416,47 @@ function MetricCard({ label, value, tone }) {
 
 function DashboardPage({ products, transactions, images, onZoom, goto }) {
   const totalSku = products.length;
-  const totalQty = products.reduce((s, p) => s + p.qty, 0);
   const low = products.filter((p) => p.qty <= p.minQty);
   const todayStr = new Date().toDateString();
   const todayTx = transactions.filter((t) => new Date(t.date).toDateString() === todayStr);
+
+  // แยกจำนวนคงเหลือตามหมวดหมู่ และแยกตามหน่วยนับในหมวดเดียวกัน เพราะหน่วยต่างกัน (กล่อง/ชิ้น) รวมกันไม่ได้
+  const categoryBreakdown = useMemo(() => {
+    const map = {};
+    CATEGORIES.forEach((c) => { map[c] = {}; }); // ให้ขึ้นครบทุกหมวดตามลำดับที่ตั้งไว้ แม้ยังไม่มีสินค้า
+    products.forEach((p) => {
+      if (!map[p.category]) map[p.category] = {};
+      map[p.category][p.unit] = (map[p.category][p.unit] || 0) + p.qty;
+    });
+    return Object.entries(map);
+  }, [products]);
 
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 18 }}>
         <MetricCard label="รายการสินค้าทั้งหมด" value={fmtNum(totalSku)} />
-        <MetricCard label="จำนวนคงเหลือรวม" value={fmtNum(totalQty)} />
         <MetricCard label="สินค้าใกล้หมด/หมด" value={fmtNum(low.length)} tone={low.length ? "danger" : undefined} />
         <MetricCard label="รายการเคลื่อนไหววันนี้" value={fmtNum(todayTx.length)} tone="accent" />
+      </div>
+
+      <SectionHeader title="จำนวนคงเหลือแยกตามหมวดหมู่" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 22 }}>
+        {categoryBreakdown.map(([cat, units]) => {
+          const unitEntries = Object.entries(units);
+          return (
+            <div key={cat} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 8 }}>{cat}</div>
+              {unitEntries.length === 0 ? (
+                <div style={{ fontSize: 12.5, color: C.muted }}>ยังไม่มีสินค้า</div>
+              ) : unitEntries.map(([unit, qty]) => (
+                <div key={unit} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: C.inkSoft, marginBottom: 2 }}>
+                  <span>{unit}</span>
+                  <span style={{ fontWeight: 700, color: C.ink }}>{fmtNum(qty)}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       <SectionHeader title="สินค้าที่ต้องเติมสต๊อก" action={low.length > 0 && <button onClick={() => goto("products")} style={linkBtn}>ดูทั้งหมด <ChevronRight size={14} /></button>} />
